@@ -29,6 +29,7 @@ interface MockResponse {
 }
 
 const mockResponses = new Map<string, MockResponse>();
+const mockErrors = new Map<string, Error>();
 
 export function mockFetchResponse(url: string, status: number, body?: unknown): void {
   mockResponses.set(url, {
@@ -37,12 +38,22 @@ export function mockFetchResponse(url: string, status: number, body?: unknown): 
   });
 }
 
+export function mockFetchError(url: string, error: Error): void {
+  mockErrors.set(url, error);
+}
+
 export function clearMockFetchResponses(): void {
   mockResponses.clear();
+  mockErrors.clear();
 }
 
 export default async function fetch(url: string | URL): Promise<ResponseLike> {
   const target = url.toString();
+  const mockError = mockErrors.get(target);
+  if (mockError) {
+    throw mockError;
+  }
+
   const mockResponse = mockResponses.get(target);
   if (mockResponse) {
     return {

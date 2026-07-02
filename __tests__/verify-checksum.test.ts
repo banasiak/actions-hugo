@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import {clearMockFetchResponses, mockFetchResponse} from './mocks/node-fetch';
+import {clearMockFetchResponses, mockFetchError, mockFetchResponse} from './mocks/node-fetch';
 import {
   computeSHA256,
   fetchReleaseChecksum,
@@ -79,6 +79,15 @@ describe('verify-checksum', () => {
       expect(await fetchReleaseChecksum('0.158.0', assetURL)).toBe('');
       expect(core.warning).toHaveBeenCalledWith(
         `request to ${checksumsURL} failed with status 404`
+      );
+    });
+
+    test('warn and return an empty string when the fetch throws', async () => {
+      mockFetchError(checksumsURL, new Error('socket hang up'));
+
+      expect(await fetchReleaseChecksum('0.158.0', assetURL)).toBe('');
+      expect(core.warning).toHaveBeenCalledWith(
+        `request to ${checksumsURL} failed: Error: socket hang up`
       );
     });
 

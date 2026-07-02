@@ -19,13 +19,17 @@ export function findChecksum(checksumsText: string, assetName: string): string {
   return '';
 }
 
+export const FetchChecksumsTimeoutMs = 10000;
+
 export async function fetchReleaseChecksum(version: string, assetURL: string): Promise<string> {
   const checksumsURL = getChecksumsURL(version);
   const assetName = assetURL.substring(assetURL.lastIndexOf('/') + 1);
 
   let checksumsText = '';
   try {
-    const response = await fetch(checksumsURL);
+    const response = await fetch(checksumsURL, {
+      signal: AbortSignal.timeout(FetchChecksumsTimeoutMs)
+    });
     if (!response.ok) {
       core.warning(`request to ${checksumsURL} failed with status ${response.status}`);
       return '';
