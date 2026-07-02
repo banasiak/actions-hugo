@@ -20,6 +20,7 @@ interface ResponseLike {
   ok: boolean;
   status: number;
   json: () => Promise<unknown>;
+  text: () => Promise<string>;
 }
 
 interface MockResponse {
@@ -47,7 +48,8 @@ export default async function fetch(url: string | URL): Promise<ResponseLike> {
     return {
       ok: mockResponse.status >= 200 && mockResponse.status < 300,
       status: mockResponse.status,
-      json: async () => mockResponse.body as unknown
+      json: async () => mockResponse.body as unknown,
+      text: async () => `${mockResponse.body ?? ''}`
     };
   }
 
@@ -68,7 +70,8 @@ export default async function fetch(url: string | URL): Promise<ResponseLike> {
         resolve({
           ok: status >= 200 && status < 300,
           status,
-          json: async () => JSON.parse(body) as unknown
+          json: async () => JSON.parse(body) as unknown,
+          text: async () => body
         });
       });
     });
